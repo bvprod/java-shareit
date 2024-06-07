@@ -73,10 +73,10 @@ public class ItemRepositoryInMemoryImpl implements ItemRepository {
 
     @Override
     public List<ItemDto> searchForItems(String query) {
-        String query_lower = query.toLowerCase();
+        String queryLowerCase = query.toLowerCase();
         return items.values().stream()
-                .filter(item -> item.getName().toLowerCase().contains(query_lower) ||
-                        item.getDescription().toLowerCase().contains(query_lower))
+                .filter(item -> item.getName().toLowerCase().contains(queryLowerCase) ||
+                        item.getDescription().toLowerCase().contains(queryLowerCase))
                 .filter(Item::getAvailable)
                 .map(ItemMapper::itemToDto).collect(Collectors.toList());
     }
