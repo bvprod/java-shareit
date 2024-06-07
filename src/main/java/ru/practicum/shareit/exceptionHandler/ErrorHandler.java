@@ -1,6 +1,5 @@
 package ru.practicum.shareit.exceptionHandler;
 
-import jakarta.validation.constraints.Email;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,19 +26,19 @@ public class ErrorHandler {
 
     @ExceptionHandler({EmailNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleEmailNotValidException (final EmailNotValidException e) {
+    public ErrorResponse handleEmailNotValidException(final EmailNotValidException e) {
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler({MethodArgumentNotValidException.class})
     @ResponseStatus(HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleMethodArgumentNotValidException (final MethodArgumentNotValidException e) {
+    public ErrorResponse handleMethodArgumentNotValidException(final MethodArgumentNotValidException e) {
         return new ErrorResponse(e.getMessage());
     }
 
     @ExceptionHandler({WrongOwnerException.class})
     @ResponseStatus(HttpStatus.FORBIDDEN)
-    public ErrorResponse handleWrongOwnerException (final WrongOwnerException e) {
+    public ErrorResponse handleWrongOwnerException(final WrongOwnerException e) {
         return new ErrorResponse(e.getMessage());
     }
 
