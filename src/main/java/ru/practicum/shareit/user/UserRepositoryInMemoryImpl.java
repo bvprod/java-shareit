@@ -1,19 +1,17 @@
 package ru.practicum.shareit.user;
 
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.validator.routines.EmailValidator;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exceptionHandler.exceptions.EmailNotValidException;
 import ru.practicum.shareit.exceptionHandler.exceptions.ObjectAlreadyExistsException;
 import ru.practicum.shareit.exceptionHandler.exceptions.ObjectDoesNotExistException;
-import ru.practicum.shareit.user.UserDto.UserDto;
-import ru.practicum.shareit.user.UserDto.UserMapper;
+import ru.practicum.shareit.exceptionHandler.exceptions.ObjectNotValidException;
 
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
+import java.util.*;
 
 @Repository
+@Slf4j
 public class UserRepositoryInMemoryImpl implements UserRepository {
 
     private final Map<Integer, User> users = new HashMap<>();
@@ -21,57 +19,67 @@ public class UserRepositoryInMemoryImpl implements UserRepository {
     private int id = 1;
 
     @Override
-    public UserDto createUser(User user) {
-        if (!users.containsValue(user)) {
-            user.setId(id++);
-            users.put(user.getId(), user);
+    public User createUser(User user) {
+        if (users.values().stream()
+                .noneMatch(user1 -> Objects.equals(user1.getEmail(), user.getEmail()))) {
+            if (user.getId() == null) {
+                user.setId(id++);
+                users.put(user.getId(), user);
+            } else {
+                throw new ObjectNotValidException("При создании нового пользователя поле id должно отсутствовать");
+            }
         } else {
             throw new ObjectAlreadyExistsException("Такой пользователь уже существует");
         }
-        return UserMapper.userToDto(user);
+        log.info(String.format("Создан пользователь %s, id=%d", user.getName(), user.getId()));
+        return user;
     }
 
     @Override
-    public UserDto updateUser(int userId, UserDto userDto) {
-        User user = UserMapper.dtoToUser(getUser(userId));
-        if (userDto.getName() != null && !userDto.getName().isBlank()) {
-            user.setName(userDto.getName());
+    public User updateUser(int userId, User newUser) {
+        User user = getUser(userId);
+        if (newUser.getName() != null && !newUser.getName().isBlank()) {
+            user.setName(newUser.getName());
         }
-        if (userDto.getEmail() != null && !userDto.getEmail().isBlank()) {
-            if (EmailValidator.getInstance().isValid(userDto.getEmail())) {
+        if (newUser.getEmail() != null && !newUser.getEmail().isBlank()) {
+            if (EmailValidator.getInstance().isValid(newUser.getEmail())) {
                 if (users.values().stream()
                         .filter(u -> u.getId() != userId)
-                        .anyMatch(u -> u.getEmail().equals(userDto.getEmail()))) {
+                        .anyMatch(u -> u.getEmail().equals(newUser.getEmail()))) {
                     throw new ObjectAlreadyExistsException("Пользователь с таким email уже существует");
                 } else {
-                    user.setEmail(userDto.getEmail());
+                    user.setEmail(newUser.getEmail());
                 }
             } else {
                 throw new EmailNotValidException("Неверный формат email");
             }
         }
         users.put(userId, user);
-        return UserMapper.userToDto(user);
+        log.info("Обновлена информация о пользователе c id=" + userId);
+        return user;
     }
 
     @Override
-    public UserDto getUser(int userId) {
+    public User getUser(int userId) {
         if (users.containsKey(userId)) {
-            return UserMapper.userToDto(users.get(userId));
+            log.info("Запрошена информация о пользователе с id=" + userId);
+            return users.get(userId);
         } else {
             throw new ObjectDoesNotExistException("Такого пользователя не существует");
         }
     }
 
     @Override
-    public List<UserDto> getAllUsers() {
-        return users.values().stream().map(UserMapper::userToDto).collect(Collectors.toList());
+    public List<User> getAllUsers() {
+        log.info("Запрошен список всех пользователей");
+        return new ArrayList<>(users.values());
     }
 
     @Override
-    public UserDto deleteUser(int userId) {
+    public User deleteUser(int userId) {
         if (users.containsKey(userId)) {
-            return UserMapper.userToDto(users.remove(userId));
+            log.info("Удален пользователь c id=" + userId);
+            return users.remove(userId);
         } else {
             throw new ObjectDoesNotExistException("Такого пользователя не существует");
         }

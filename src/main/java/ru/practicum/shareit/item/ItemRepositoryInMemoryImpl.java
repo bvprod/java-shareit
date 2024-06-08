@@ -1,11 +1,10 @@
 package ru.practicum.shareit.item;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Repository;
 import ru.practicum.shareit.exceptionHandler.exceptions.ObjectDoesNotExistException;
 import ru.practicum.shareit.exceptionHandler.exceptions.WrongOwnerException;
-import ru.practicum.shareit.item.dto.ItemDto;
-import ru.practicum.shareit.item.dto.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.UserService;
 
@@ -16,6 +15,7 @@ import java.util.stream.Collectors;
 
 @Repository
 @RequiredArgsConstructor
+@Slf4j
 public class ItemRepositoryInMemoryImpl implements ItemRepository {
 
     private final UserService userService;
@@ -23,61 +23,61 @@ public class ItemRepositoryInMemoryImpl implements ItemRepository {
     private int id = 1;
 
     @Override
-    public ItemDto addNewItem(Item item, int ownerId) {
-        if (userService.getUser(ownerId) == null) {
-            throw new ObjectDoesNotExistException("Вещь с данным id не существует");
-        }
+    public Item addNewItem(Item item, int ownerId) {
+        userService.getUser(ownerId);
         item.setId(id++);
         item.setOwnerId(ownerId);
         items.put(item.getId(), item);
-        return ItemMapper.itemToDto(items.get(item.getId()));
+        log.info(String.format("Добавлена новая вещь %s, id: %d", item.getName(), item.getId()));
+        return items.get(item.getId());
     }
 
     @Override
-    public ItemDto updateItem(int itemId, int ownerId, ItemDto itemDto) {
-        if (userService.getUser(ownerId) == null) {
-            throw new ObjectDoesNotExistException("Пользователь с данным id не существует");
-        }
-        Item item = ItemMapper.dtoToItem(getItem(itemId));
+    public Item updateItem(int itemId, int ownerId, Item newitem) {
+        userService.getUser(ownerId);
+        Item item = getItem(itemId);
         if (item.getOwnerId() != ownerId) {
             throw new WrongOwnerException("Данная вещь не принадлежит указанному пользователю");
         }
-        if (itemDto.getName() != null && !itemDto.getName().isBlank()) {
-            item.setName(itemDto.getName());
+        if (newitem.getName() != null && !newitem.getName().isBlank()) {
+            item.setName(newitem.getName());
         }
-        if (itemDto.getDescription() != null && !itemDto.getDescription().isBlank()) {
-            item.setDescription(itemDto.getDescription());
+        if (newitem.getDescription() != null && !newitem.getDescription().isBlank()) {
+            item.setDescription(newitem.getDescription());
         }
-        if (itemDto.getAvailable() != null) {
-            item.setAvailable(itemDto.getAvailable());
+        if (newitem.getAvailable() != null) {
+            item.setAvailable(newitem.getAvailable());
         }
         items.put(itemId, item);
-        return ItemMapper.itemToDto(item);
+        log.info("Обновлена информация о вещи, id=" + itemId);
+        return item;
     }
 
     @Override
-    public ItemDto getItem(int itemId) {
+    public Item getItem(int itemId) {
         if (!items.containsKey(itemId)) {
             throw new ObjectDoesNotExistException("Вещи с данным id не существует");
         }
-        return ItemMapper.itemToDto(items.get(itemId));
+        log.info("Запрос информации о вещи, id=" + itemId);
+        return items.get(itemId);
     }
 
     @Override
-    public List<ItemDto> getAllItems(int ownerId) {
+    public List<Item> getAllItems(int ownerId) {
+        log.info("Запрос информации о всех вещах пользователя с id=" + ownerId);
         return items.values().stream()
                 .filter(item -> item.getOwnerId() == ownerId)
-                .map(ItemMapper::itemToDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<ItemDto> searchForItems(String query) {
+    public List<Item> searchForItems(String query) {
+        log.info("Поиск вещи по запросу: " + query);
         String queryLowerCase = query.toLowerCase();
         return items.values().stream()
                 .filter(item -> item.getName().toLowerCase().contains(queryLowerCase) ||
                         item.getDescription().toLowerCase().contains(queryLowerCase))
                 .filter(Item::getAvailable)
-                .map(ItemMapper::itemToDto).collect(Collectors.toList());
+                .collect(Collectors.toList());
     }
 }

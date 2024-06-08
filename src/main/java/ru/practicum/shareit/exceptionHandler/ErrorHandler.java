@@ -5,10 +5,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import ru.practicum.shareit.exceptionHandler.exceptions.EmailNotValidException;
-import ru.practicum.shareit.exceptionHandler.exceptions.ObjectAlreadyExistsException;
-import ru.practicum.shareit.exceptionHandler.exceptions.ObjectDoesNotExistException;
-import ru.practicum.shareit.exceptionHandler.exceptions.WrongOwnerException;
+import ru.practicum.shareit.exceptionHandler.exceptions.*;
 
 @RestControllerAdvice()
 public class ErrorHandler {
@@ -39,6 +36,12 @@ public class ErrorHandler {
     @ExceptionHandler({WrongOwnerException.class})
     @ResponseStatus(HttpStatus.FORBIDDEN)
     public ErrorResponse handleWrongOwnerException(final WrongOwnerException e) {
+        return new ErrorResponse(e.getMessage());
+    }
+
+    @ExceptionHandler({ObjectNotValidException.class})
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleObjectNotValidException(final ObjectNotValidException e) {
         return new ErrorResponse(e.getMessage());
     }
 
