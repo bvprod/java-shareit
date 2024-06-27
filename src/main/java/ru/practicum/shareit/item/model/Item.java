@@ -7,6 +7,7 @@ import javax.persistence.*;
 import java.util.Objects;
 
 @AllArgsConstructor
+@NoArgsConstructor
 @Entity
 @Data
 @Table(name = "items")

@@ -1,30 +1,22 @@
 package ru.practicum.shareit.booking;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.mapstruct.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
+import ru.practicum.shareit.booking.dto.BookingDtoOutput;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
-import ru.practicum.shareit.user.UserDto.UserDto;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class BookingMapper {
-    public static BookingDto bookingToDto(Booking booking) {
-        return new BookingDto(booking.getId(),
-                booking.getStart(),
-                booking.getEnd(),
-                booking.getItem().getId(),
-                booking.getBooker().getId(),
-                booking.getStatus());
-    }
+@Mapper(componentModel = "spring")
+public interface BookingMapper {
 
-    public static Booking dtoToBooking(BookingDto bookingDto, User booker, Item item) {
-        return new Booking(bookingDto.getId(),
-                bookingDto.getStart(),
-                bookingDto.getEnd(),
-                item,
-                booker,
-                bookingDto.getStatus());
-    }
+    @Mapping(target = "itemId", expression = "java(entity.getItem().getId())")
+    @Mapping(target = "bookerId", expression = "java(entity.getBooker().getId())")
+    BookingDto entityToDto(Booking entity);
 
+    @Mapping(target = "id" , source = "dto.id")
+    @Mapping(target = "item" , source = "item")
+    @Mapping(target = "booker" , source = "user")
+    Booking dtoToEntity(BookingDto dto, Item item, User user);
+
+    BookingDtoOutput entityToOutputDto(Booking entity);
 }

@@ -38,5 +38,9 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
             "order by b.start desc")
     List<Booking> findRejectedBookingsByBookerIdOrderByStartDttmDesc(Long bookerId);
 
-
+    @Query("select b from Booking b " +
+            "where b.item.owner.id = ?1 " +
+            "and b.status = ?2" +
+            "order by b.start desc")
+    List<Booking> findAllBookingsForUserItem(Long ownerId);
 }

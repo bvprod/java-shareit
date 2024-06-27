@@ -14,7 +14,6 @@ import java.util.Objects;
 @AllArgsConstructor
 @NoArgsConstructor
 @Entity
-@DynamicUpdate
 @Table(name = "users")
 public class User {
     @Id

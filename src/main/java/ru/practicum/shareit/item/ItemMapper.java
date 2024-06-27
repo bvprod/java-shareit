@@ -1,28 +1,21 @@
 package ru.practicum.shareit.item;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
+import org.mapstruct.*;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
-final class ItemMapper {
-    public static ItemDto itemToDto(Item item) {
-        return new ItemDto(item.getId(),
-                item.getName(),
-                item.getDescription(),
-                item.getAvailable(),
-                item.getOwner().getId(),
-                item.getRequest());
-    }
+@Mapper(componentModel = "spring")
+public interface ItemMapper {
+    @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
+    void updateItemFromDto(ItemDto itemDto, @MappingTarget Item entity);
 
-    public static Item dtoToItem(ItemDto itemDto, User user) {
-        return new Item(itemDto.getId(),
-                itemDto.getName(),
-                itemDto.getDescription(),
-                itemDto.getAvailable(),
-                user,
-                itemDto.getRequest());
-    }
+    @Mapping(target = "ownerId", expression = "java(entity.getOwner().getId())")
+    ItemDto entityToDto(Item entity);
+
+    @Mapping(target = "owner", source = "user")
+    @Mapping(target = "id", source = "dto.id")
+    @Mapping(target = "name", source = "dto.name")
+    Item dtoToEntity(ItemDto dto, User user);
 }
+
