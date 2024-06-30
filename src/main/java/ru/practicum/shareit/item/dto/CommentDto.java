@@ -14,7 +14,7 @@ public class CommentDto {
     private Long id;
     @NotBlank(message = "Текст комментария должен быть заполнен")
     private String text;
-    private Long author_id;
-    private Long item_id;
+    private Long authorId;
+    private Long itemId;
     private LocalDateTime created;
 }
