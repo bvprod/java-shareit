@@ -22,6 +22,7 @@ public interface ItemMapper {
 
     @Mapping(target = "authorId", expression = "java(entity.getAuthor().getId())")
     @Mapping(target = "itemId", expression = "java(entity.getItem().getId())")
+    @Mapping(target = "authorName", expression = "java(entity.getAuthor().getName())")
     CommentDto commentEntityToDto(Comment entity);
 
     @Mapping(target = "author", source = "author")
