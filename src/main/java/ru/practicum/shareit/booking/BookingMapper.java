@@ -3,6 +3,7 @@ package ru.practicum.shareit.booking;
 import org.mapstruct.*;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoOutput;
+import ru.practicum.shareit.booking.dto.BookingDtoShort;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
 
@@ -19,4 +20,7 @@ public interface BookingMapper {
     Booking dtoToEntity(BookingDto dto, Item item, User user);
 
     BookingDtoOutput entityToOutputDto(Booking entity);
+
+    @Mapping(target = "bookerId", expression = "java(entity.getBooker().getId())")
+    BookingDtoShort entityToShortDto(Booking entity);
 }

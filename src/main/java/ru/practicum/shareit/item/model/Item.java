@@ -4,6 +4,7 @@ import lombok.*;
 import ru.practicum.shareit.user.User;
 
 import javax.persistence.*;
+import java.util.List;
 import java.util.Objects;
 
 @AllArgsConstructor
@@ -26,7 +27,8 @@ public class Item {
     private User owner;
     @Column(name = "request_id")
     private Long request;
-
+    @OneToMany(mappedBy = "item")
+    private List<Comment> comments;
 
     @Override
     public boolean equals(Object o) {

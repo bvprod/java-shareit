@@ -2,16 +2,13 @@ package ru.practicum.shareit.booking.dto;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import ru.practicum.shareit.booking.BookingStatus;
 import ru.practicum.shareit.exceptionHandler.exceptions.InvalidBookingDateException;
-import ru.practicum.shareit.item.dto.ItemDtoOnlyId;
 
 import javax.validation.constraints.Future;
 import javax.validation.constraints.NotNull;
-import java.time.Instant;
 import java.time.LocalDateTime;
 
 @Data

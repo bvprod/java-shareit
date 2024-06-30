@@ -1,12 +1,12 @@
 package ru.practicum.shareit.booking;
 
 import lombok.RequiredArgsConstructor;
+import org.mapstruct.factory.Mappers;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoOutput;
-import ru.practicum.shareit.exceptionHandler.exceptions.ItemNotAvailableException;
-import ru.practicum.shareit.exceptionHandler.exceptions.ObjectDoesNotExistException;
-import ru.practicum.shareit.exceptionHandler.exceptions.WrongOwnerException;
+import ru.practicum.shareit.exceptionHandler.exceptions.*;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -17,14 +17,16 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Transactional(readOnly = true)
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
     private final UserRepository userRepository;
     private final ItemRepository itemRepository;
-    private final BookingMapper mapper;
+    private final BookingMapper mapper = Mappers.getMapper(BookingMapper.class);
 
     @Override
+    @Transactional
     public BookingDtoOutput addBooking(BookingDto bookingDto, long bookerId) {
         Item item = itemRepository
                 .findById(bookingDto.getItemId())
@@ -36,15 +38,22 @@ public class BookingServiceImpl implements BookingService {
                 .findById(bookerId)
                 .orElseThrow(() ->
                         new ObjectDoesNotExistException("Данного пользователя не существует"));
+        if (item.getOwner().getId().equals(bookerId)){
+            throw new WrongOwnerException("Нельзя бронировать свою же вещь");
+        }
         return mapper.entityToOutputDto(bookingRepository.save(mapper.dtoToEntity(bookingDto, item, user)));
     }
 
     @Override
+    @Transactional
     public BookingDtoOutput decideBooking(long bookingId, long ownerId, boolean approved) {
         Booking booking = bookingRepository
                 .findById(bookingId)
                 .orElseThrow(() ->
                         new ObjectDoesNotExistException("Данного бронирования не существует"));
+        if (booking.getStatus() == BookingStatus.APPROVED) {
+            throw new BookingAlreadyApprovedException("Бронирование в статусе approved нельзя менять");
+        }
         if (booking.getItem().getOwner().getId().equals(ownerId)) {
             if (approved) {
                 booking.setStatus(BookingStatus.APPROVED);
@@ -111,34 +120,37 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoOutput> getUserItemBookings(long ownerId, BookingState state) {
+        userRepository
+                .findById(ownerId)
+                .orElseThrow(() -> new ObjectDoesNotExistException("Данного пользователя не существует"));
         switch (state) {
             case ALL:
-                return bookingRepository.findByBooker_idOrderByStartDesc(ownerId)
+                return bookingRepository.findAllBookingsForUserItem(ownerId)
                         .stream()
                         .map(mapper::entityToOutputDto)
                         .collect(Collectors.toList());
             case PAST:
-                return bookingRepository.findPastBookingsByBookerIdOrderByStartDttmDesc(ownerId)
+                return bookingRepository.findPastBookingsForUserItem(ownerId)
                         .stream()
                         .map(mapper::entityToOutputDto)
                         .collect(Collectors.toList());
             case FUTURE:
-                return bookingRepository.findFutureBookingsByBookerIdOrderByStartDttmDesc(ownerId)
+                return bookingRepository.findFutureBookingsForUserItem(ownerId)
                         .stream()
                         .map(mapper::entityToOutputDto)
                         .collect(Collectors.toList());
             case CURRENT:
-                return bookingRepository.findCurrentBookingsByBookerIdOrderByStartDttmDesc(ownerId)
+                return bookingRepository.findCurrentBookingsForUserItem(ownerId)
                         .stream()
                         .map(mapper::entityToOutputDto)
                         .collect(Collectors.toList());
             case WAITING:
-                return bookingRepository.findWaitingBookingsByBookerIdOrderByStartDttmDesc(ownerId)
+                return bookingRepository.findWaitingBookingsForUserItem(ownerId)
                         .stream()
                         .map(mapper::entityToOutputDto)
                         .collect(Collectors.toList());
             case REJECTED:
-                return bookingRepository.findRejectedBookingsByBookerIdOrderByStartDttmDesc(ownerId)
+                return bookingRepository.findRejectedBookingsForUserItem(ownerId)
                         .stream()
                         .map(mapper::entityToOutputDto)
                         .collect(Collectors.toList());

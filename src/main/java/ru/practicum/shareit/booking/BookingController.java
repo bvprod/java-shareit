@@ -46,4 +46,5 @@ public class BookingController {
                                          @RequestHeader("X-Sharer-User-Id") long ownerId) {
         return bookingService.getUserItemBookings(ownerId, state);
     }
+
 }
