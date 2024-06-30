@@ -122,7 +122,7 @@ public class ItemServiceImpl implements ItemService {
         LocalDateTime currentTimestamp = LocalDateTime.now();
         log.info("Время операции: " + currentTimestamp);
         BookingDtoShort lastBooking = bookings.stream()
-                .filter(b -> b.getEnd().isBefore(currentTimestamp) && b.getStatus() == BookingStatus.APPROVED)
+                .filter(b -> b.getStart().isBefore(currentTimestamp) && b.getStatus() == BookingStatus.APPROVED)
                 .max(Comparator.comparing(Booking::getEnd))
                 .map(bookingMapper::entityToShortDto)
                 .orElse(null);
