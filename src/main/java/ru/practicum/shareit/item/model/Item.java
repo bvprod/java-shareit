@@ -1,11 +1,11 @@
 package ru.practicum.shareit.item.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import ru.practicum.shareit.user.User;
+import ru.practicum.shareit.user.model.User;
 
-import javax.persistence.*;
 import java.util.List;
 import java.util.Objects;
 
@@ -24,12 +24,12 @@ public class Item {
     private String description;
     @Column(name = "is_available")
     private Boolean available;
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "owner_id")
     private User owner;
     @Column(name = "request_id")
     private Long request;
-    @OneToMany(mappedBy = "item")
+    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
     private List<Comment> comments;
 
     @Override

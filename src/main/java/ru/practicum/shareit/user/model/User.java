@@ -1,10 +1,10 @@
-package ru.practicum.shareit.user;
+package ru.practicum.shareit.user.model;
 
+import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import javax.persistence.*;
 import java.util.Objects;
 
 @Data

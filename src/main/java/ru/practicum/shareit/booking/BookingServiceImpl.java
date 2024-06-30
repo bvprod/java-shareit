@@ -12,8 +12,8 @@ import ru.practicum.shareit.exceptionHandler.exceptions.ObjectDoesNotExistExcept
 import ru.practicum.shareit.exceptionHandler.exceptions.WrongOwnerException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.User;
 import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
 import java.util.stream.Collectors;
