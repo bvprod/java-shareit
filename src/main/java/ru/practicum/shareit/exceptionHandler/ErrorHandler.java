@@ -1,7 +1,5 @@
 package ru.practicum.shareit.exceptionHandler;
 
-import com.fasterxml.jackson.databind.exc.ValueInstantiationException;
-import org.springframework.core.convert.ConversionFailedException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;

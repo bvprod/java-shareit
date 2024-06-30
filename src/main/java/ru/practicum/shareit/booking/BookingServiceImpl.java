@@ -6,7 +6,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingDto;
 import ru.practicum.shareit.booking.dto.BookingDtoOutput;
-import ru.practicum.shareit.exceptionHandler.exceptions.*;
+import ru.practicum.shareit.exceptionHandler.exceptions.BookingAlreadyApprovedException;
+import ru.practicum.shareit.exceptionHandler.exceptions.ItemNotAvailableException;
+import ru.practicum.shareit.exceptionHandler.exceptions.ObjectDoesNotExistException;
+import ru.practicum.shareit.exceptionHandler.exceptions.WrongOwnerException;
 import ru.practicum.shareit.item.ItemRepository;
 import ru.practicum.shareit.item.model.Item;
 import ru.practicum.shareit.user.User;
@@ -38,7 +41,7 @@ public class BookingServiceImpl implements BookingService {
                 .findById(bookerId)
                 .orElseThrow(() ->
                         new ObjectDoesNotExistException("Данного пользователя не существует"));
-        if (item.getOwner().getId().equals(bookerId)){
+        if (item.getOwner().getId().equals(bookerId)) {
             throw new WrongOwnerException("Нельзя бронировать свою же вещь");
         }
         return mapper.entityToOutputDto(bookingRepository.save(mapper.dtoToEntity(bookingDto, item, user)));

@@ -1,12 +1,10 @@
 package ru.practicum.shareit.item.dto;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.mapstruct.factory.Mappers;
-import org.springframework.beans.factory.annotation.Autowired;
 import ru.practicum.shareit.booking.dto.BookingDtoShort;
 import ru.practicum.shareit.item.ItemMapper;
 import ru.practicum.shareit.item.model.Item;
@@ -20,6 +18,8 @@ import java.util.stream.Collectors;
 @AllArgsConstructor
 @NoArgsConstructor
 public class ItemDtoWithBookingsAndComments {
+    @JsonIgnore
+    private final ItemMapper itemMapper = Mappers.getMapper(ItemMapper.class);
     private Long id;
     @NotBlank(message = "Имя не может быть пустым")
     private String name;
@@ -32,9 +32,6 @@ public class ItemDtoWithBookingsAndComments {
     private BookingDtoShort lastBooking;
     private BookingDtoShort nextBooking;
     private List<CommentDto> comments;
-
-    @JsonIgnore
-    private final ItemMapper itemMapper = Mappers.getMapper(ItemMapper.class);
 
     public ItemDtoWithBookingsAndComments(Item item, BookingDtoShort lastBooking, BookingDtoShort nextBooking) {
         this.id = item.getId();

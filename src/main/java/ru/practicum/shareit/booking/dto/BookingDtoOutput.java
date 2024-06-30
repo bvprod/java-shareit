@@ -30,11 +30,11 @@ public class BookingDtoOutput {
 
     @JsonCreator
     public BookingDtoOutput(@JsonProperty("id") Long id,
-                      @JsonProperty("start") LocalDateTime start,
-                      @JsonProperty("end") LocalDateTime end,
-                      @JsonProperty("item") Item item,
-                      @JsonProperty("booker") User booker,
-                      @JsonProperty("status") BookingStatus status) {
+                            @JsonProperty("start") LocalDateTime start,
+                            @JsonProperty("end") LocalDateTime end,
+                            @JsonProperty("item") Item item,
+                            @JsonProperty("booker") User booker,
+                            @JsonProperty("status") BookingStatus status) {
         if (!end.isAfter(start)) {
             throw new InvalidBookingDateException("Дата начала бронирования должна быть раньше даты конца бронирования");
         }

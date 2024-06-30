@@ -3,7 +3,6 @@ package ru.practicum.shareit.exceptionHandler;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
-import lombok.RequiredArgsConstructor;
 
 @Getter
 public class ErrorResponse {

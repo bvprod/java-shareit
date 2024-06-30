@@ -3,9 +3,6 @@ package ru.practicum.shareit.user;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import net.bytebuddy.build.AccessControllerPlugin;
-import org.hibernate.annotations.DynamicUpdate;
-import org.springframework.stereotype.Component;
 
 import javax.persistence.*;
 import java.util.Objects;
