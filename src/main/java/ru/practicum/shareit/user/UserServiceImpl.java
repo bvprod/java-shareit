@@ -32,8 +32,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public UserDto updateUser(Long userId, UserDto userDto) {
-        User user = userRepository.findById(userId).orElseThrow(() ->
-                new ObjectDoesNotExistException("Данного пользователя не существует"));
+        User user = findUser(userId);
         mapper.updateUserFromDto(userDto, user);
         return mapper.entityToDto(userRepository.save(user));
     }
@@ -54,5 +53,11 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public void deleteUser(Long userId) {
         userRepository.deleteById(userId);
+    }
+
+    @Override
+    public User findUser(Long userId) {
+        return userRepository.findById(userId).orElseThrow(() ->
+                new ObjectDoesNotExistException("Данного пользователя не существует"));
     }
 }

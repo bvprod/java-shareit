@@ -16,7 +16,7 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBookingsAndComments;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
 
 import java.time.LocalDateTime;
@@ -30,37 +30,34 @@ import java.util.stream.Collectors;
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
-    private final UserRepository userRepository;
+    private final UserService userService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final BookingMapper bookingMapper = Mappers.getMapper(BookingMapper.class);
     private final ItemMapper mapper = Mappers.getMapper(ItemMapper.class);
 
     public ItemServiceImpl(ItemRepository itemRepository,
-                           UserRepository userRepository,
+                           UserService userService,
                            BookingRepository bookingRepository,
                            CommentRepository commentRepository) {
         this.itemRepository = itemRepository;
-        this.userRepository = userRepository;
+        this.userService = userService;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
     }
 
+
     @Override
     @Transactional
     public ItemDto addNewItem(ItemDto itemDto, Long ownerId) {
-        User owner = userRepository
-                .findById(ownerId)
-                .orElseThrow(() -> new ObjectDoesNotExistException("Пользователь с данным id не существует"));
+        User owner = userService.findUser(ownerId);
         return mapper.entityToDto(itemRepository.save(mapper.dtoToEntity(itemDto, owner)));
     }
 
     @Override
     @Transactional
     public ItemDto updateItem(Long itemId, Long ownerId, ItemDto itemDto) {
-        Item item = itemRepository
-                .findById(itemId)
-                .orElseThrow(() -> new ObjectDoesNotExistException("Вещь с данным id не существует"));
+        Item item = findItem(itemId);
         if (!item.getOwner().getId().equals(ownerId)) {
             throw new WrongOwnerException("Данный пользователь не является владельцем этой вещи");
         }
@@ -70,12 +67,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public ItemDtoWithBookingsAndComments getItem(Long itemId, Long userId) {
-        userRepository
-                .findById(userId)
-                .orElseThrow(() -> new ObjectDoesNotExistException("Пользователь с данным id не существует"));
-        Item item = itemRepository
-                .findById(itemId)
-                .orElseThrow(() -> new ObjectDoesNotExistException("Вещь с данным id не существует"));
+        userService.findUser(userId);
+        Item item = findItem(itemId);
         if (item.getOwner().getId().equals(userId)) {
             return findLastAndNextItemBookings(item);
         } else return new ItemDtoWithBookingsAndComments(item, null, null);
@@ -83,9 +76,7 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<ItemDtoWithBookingsAndComments> getAllItems(Long ownerId) {
-        userRepository
-                .findById(ownerId)
-                .orElseThrow(() -> new ObjectDoesNotExistException("Пользователь с данным id не существует"));
+        userService.findUser(ownerId);
         List<Item> items = itemRepository.findByOwnerIdOrderByIdAsc(ownerId);
         return items.stream().map(this::findLastAndNextItemBookings).collect(Collectors.toList());
     }
@@ -98,12 +89,8 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public CommentDto addComment(Long itemId, Long authorId, CommentDto commentDto) {
-        Item item = itemRepository
-                .findById(itemId)
-                .orElseThrow(() -> new ObjectDoesNotExistException("Вещь с данным id не существует"));
-        User author = userRepository
-                .findById(authorId)
-                .orElseThrow(() -> new ObjectDoesNotExistException("Пользователь с данным id не существует"));
+        Item item = findItem(itemId);
+        User author = userService.findUser(authorId);
         bookingRepository.findByBooker_idOrderByStartDesc(authorId).stream()
                 .filter(b -> b.getItem().getId().equals(itemId) && b.getStatus() == BookingStatus.APPROVED
                         && b.getEnd().isBefore(LocalDateTime.now()))
@@ -114,7 +101,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Transactional
-    private ItemDtoWithBookingsAndComments findLastAndNextItemBookings(Item item) {
+    public ItemDtoWithBookingsAndComments findLastAndNextItemBookings(Item item) {
         List<Booking> bookings = bookingRepository.findByItem_idOrderByStartDesc(item.getId());
         if (bookings.isEmpty()) {
             return new ItemDtoWithBookingsAndComments(item, null, null);
@@ -133,5 +120,12 @@ public class ItemServiceImpl implements ItemService {
                 .map(bookingMapper::entityToShortDto)
                 .orElse(null);
         return new ItemDtoWithBookingsAndComments(item, lastBooking, nextBooking);
+    }
+
+    @Override
+    public Item findItem(Long itemId) {
+        return itemRepository
+                .findById(itemId)
+                .orElseThrow(() -> new ObjectDoesNotExistException("Вещь с данным id не существует"));
     }
 }

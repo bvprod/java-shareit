@@ -15,4 +15,6 @@ public interface BookingService {
     List<BookingDtoOutput> getUserBookings(long userId, BookingState state);
 
     List<BookingDtoOutput> getUserItemBookings(long ownerId, BookingState state);
+
+    Booking findBooking(Long bookingId);
 }

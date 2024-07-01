@@ -10,9 +10,9 @@ import ru.practicum.shareit.exceptionHandler.exceptions.BookingAlreadyApprovedEx
 import ru.practicum.shareit.exceptionHandler.exceptions.ItemNotAvailableException;
 import ru.practicum.shareit.exceptionHandler.exceptions.ObjectDoesNotExistException;
 import ru.practicum.shareit.exceptionHandler.exceptions.WrongOwnerException;
-import ru.practicum.shareit.item.ItemRepository;
+import ru.practicum.shareit.item.ItemService;
 import ru.practicum.shareit.item.model.Item;
-import ru.practicum.shareit.user.UserRepository;
+import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
 
 import java.util.List;
@@ -24,23 +24,26 @@ import java.util.stream.Collectors;
 public class BookingServiceImpl implements BookingService {
 
     private final BookingRepository bookingRepository;
-    private final UserRepository userRepository;
-    private final ItemRepository itemRepository;
+    private final ItemService itemService;
+    private final UserService userService;
     private final BookingMapper mapper = Mappers.getMapper(BookingMapper.class);
+
+    @Override
+    public Booking findBooking(Long bookingId) {
+        return bookingRepository
+                .findById(bookingId)
+                .orElseThrow(() ->
+                        new ObjectDoesNotExistException("Данного бронирования не существует"));
+    }
 
     @Override
     @Transactional
     public BookingDtoOutput addBooking(BookingDto bookingDto, long bookerId) {
-        Item item = itemRepository
-                .findById(bookingDto.getItemId())
-                .orElseThrow(() -> new ObjectDoesNotExistException("Вещь с данным id не существует"));
+        Item item = itemService.findItem(bookingDto.getItemId());
         if (!item.getAvailable()) {
             throw new ItemNotAvailableException("Эта вещь недоступна для бронирования");
         }
-        User user = userRepository
-                .findById(bookerId)
-                .orElseThrow(() ->
-                        new ObjectDoesNotExistException("Данного пользователя не существует"));
+        User user = userService.findUser(bookerId);
         if (item.getOwner().getId().equals(bookerId)) {
             throw new WrongOwnerException("Нельзя бронировать свою же вещь");
         }
@@ -50,10 +53,7 @@ public class BookingServiceImpl implements BookingService {
     @Override
     @Transactional
     public BookingDtoOutput decideBooking(long bookingId, long ownerId, boolean approved) {
-        Booking booking = bookingRepository
-                .findById(bookingId)
-                .orElseThrow(() ->
-                        new ObjectDoesNotExistException("Данного бронирования не существует"));
+        Booking booking = findBooking(bookingId);
         if (booking.getStatus() == BookingStatus.APPROVED) {
             throw new BookingAlreadyApprovedException("Бронирование в статусе approved нельзя менять");
         }
@@ -71,8 +71,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public BookingDtoOutput getBooking(long bookingId, long userId) {
-        Booking booking = bookingRepository.findById(bookingId).orElseThrow(() ->
-                new ObjectDoesNotExistException("Данного бронирования не существует"));
+        Booking booking = findBooking(bookingId);
         if (booking.getBooker().getId() == userId || booking.getItem().getOwner().getId() == userId) {
             return mapper.entityToOutputDto(booking);
         } else {
@@ -82,9 +81,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoOutput> getUserBookings(long userId, BookingState state) {
-        userRepository
-                .findById(userId)
-                .orElseThrow(() -> new ObjectDoesNotExistException("Данного пользователя не существует"));
+        userService.findUser(userId);
         switch (state) {
             case ALL:
                 return bookingRepository.findByBooker_idOrderByStartDesc(userId)
@@ -123,9 +120,7 @@ public class BookingServiceImpl implements BookingService {
 
     @Override
     public List<BookingDtoOutput> getUserItemBookings(long ownerId, BookingState state) {
-        userRepository
-                .findById(ownerId)
-                .orElseThrow(() -> new ObjectDoesNotExistException("Данного пользователя не существует"));
+        userService.findUser(ownerId);
         switch (state) {
             case ALL:
                 return bookingRepository.findAllBookingsForUserItem(ownerId)
