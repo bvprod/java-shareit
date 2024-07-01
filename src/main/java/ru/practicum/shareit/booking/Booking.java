@@ -1,15 +1,34 @@
 package ru.practicum.shareit.booking;
 
-import java.time.Instant;
+import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
+import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.user.model.User;
 
-/**
- * TODO Sprint add-bookings.
- */
+import java.time.LocalDateTime;
+
+
+@Entity
+@Table(name = "bookings")
+@Data
+@AllArgsConstructor
+@RequiredArgsConstructor
 public class Booking {
-    private String id;
-    private Instant start;
-    private Instant end;
-    private String itemId;
-    private String bookerId;
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+    @Column(name = "start_dttm")
+    private LocalDateTime start;
+    @Column(name = "end_dttm")
+    private LocalDateTime end;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_id")
+    private Item item;
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "booker_id")
+    private User booker;
+    @Enumerated(EnumType.STRING)
     private BookingStatus status;
 }
