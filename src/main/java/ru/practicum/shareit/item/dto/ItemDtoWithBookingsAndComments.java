@@ -28,7 +28,7 @@ public class ItemDtoWithBookingsAndComments {
     @NotNull(message = "Необходимо указать доступность вещи")
     private Boolean available;
     private Long ownerId;
-    private Long request;
+    private Long requestId;
     private BookingDtoShort lastBooking;
     private BookingDtoShort nextBooking;
     private List<CommentDto> comments;
@@ -39,7 +39,7 @@ public class ItemDtoWithBookingsAndComments {
         this.description = item.getDescription();
         this.available = item.getAvailable();
         this.ownerId = item.getOwner().getId();
-        this.request = item.getRequest();
+        this.requestId = item.getRequest() == null ? null : item.getRequest().getId();
         this.comments = item.getComments().stream().map(itemMapper::commentEntityToDto).collect(Collectors.toList());
         this.lastBooking = lastBooking;
         this.nextBooking = nextBooking;

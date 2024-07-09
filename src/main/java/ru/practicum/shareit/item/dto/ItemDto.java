@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import ru.practicum.shareit.request.dto.ItemRequestDto;
 
 
 @Data
@@ -19,5 +20,5 @@ public class ItemDto {
     @NotNull(message = "Необходимо указать доступность вещи")
     private Boolean available;
     private Long ownerId;
-    private Long request;
+    private Long requestId;
 }

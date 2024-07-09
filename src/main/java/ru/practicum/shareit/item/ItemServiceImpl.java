@@ -16,6 +16,8 @@ import ru.practicum.shareit.item.dto.CommentDto;
 import ru.practicum.shareit.item.dto.ItemDto;
 import ru.practicum.shareit.item.dto.ItemDtoWithBookingsAndComments;
 import ru.practicum.shareit.item.model.Item;
+import ru.practicum.shareit.request.ItemRequestService;
+import ru.practicum.shareit.request.model.ItemRequest;
 import ru.practicum.shareit.user.UserService;
 import ru.practicum.shareit.user.model.User;
 
@@ -31,6 +33,7 @@ public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
     private final UserService userService;
+    private final ItemRequestService itemRequestService;
     private final BookingRepository bookingRepository;
     private final CommentRepository commentRepository;
     private final BookingMapper bookingMapper = Mappers.getMapper(BookingMapper.class);
@@ -38,20 +41,23 @@ public class ItemServiceImpl implements ItemService {
 
     public ItemServiceImpl(ItemRepository itemRepository,
                            UserService userService,
-                           BookingRepository bookingRepository,
+                           ItemRequestService itemRequestService, BookingRepository bookingRepository,
                            CommentRepository commentRepository) {
         this.itemRepository = itemRepository;
         this.userService = userService;
+        this.itemRequestService = itemRequestService;
         this.bookingRepository = bookingRepository;
         this.commentRepository = commentRepository;
     }
-
 
     @Override
     @Transactional
     public ItemDto addNewItem(ItemDto itemDto, Long ownerId) {
         User owner = userService.findUser(ownerId);
-        return mapper.entityToDto(itemRepository.save(mapper.dtoToEntity(itemDto, owner)));
+        ItemRequest itemRequest = itemDto.getRequestId() == null
+                ? null
+                : itemRequestService.findItemRequest(itemDto.getRequestId());
+        return mapper.entityToDto(itemRepository.save(mapper.dtoToEntity(itemDto, owner, itemRequest)));
     }
 
     @Override
